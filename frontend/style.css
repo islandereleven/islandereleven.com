@@ -1,0 +1,21 @@
+.linktree-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.linktree-button {
+    display: inline-block;
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    width: 60%;
+}
+
+.linktree-button:hover {
+    background-color: #eaeaea;
+}
+
+.p {
+    align-items: center;
+}
