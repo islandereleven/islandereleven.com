@@ -7,3 +7,4 @@ terraform.tfvars
 *.tfstate.lock.info
 *.tfvars
 *.lock.hcl
+.DS_Store
