@@ -17,7 +17,6 @@ resource "aws_s3_bucket_website_configuration" "example-config" {
   index_document {
     suffix = "index.html"
   }
-  
 }
 
 resource "aws_s3_bucket_policy" "bucket_policy" {
