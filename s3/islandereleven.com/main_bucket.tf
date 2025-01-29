@@ -1,7 +1,6 @@
 
 resource "aws_s3_bucket" "website_bucket" {
   bucket = var.bucket_name
-  
 }
 
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
@@ -19,7 +18,7 @@ resource "aws_s3_bucket_website_configuration" "example-config" {
   }
 }
 
-resource "aws_s3_bucket_policy" "bucket_policy" {
+resource "aws_s3_bucket_policy" "islander_bucket_policy" {
   bucket = aws_s3_bucket.website_bucket.id
   policy = templatefile("s3-policy.json", { bucket = var.bucket_name })
 }
