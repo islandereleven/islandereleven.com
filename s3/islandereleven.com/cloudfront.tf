@@ -1,5 +1,5 @@
 data "aws_acm_certificate" "cert" {
-  domain   = "islandereleven.com"
+  domain   = var.domain_name
   statuses = ["ISSUED"]
   provider = aws.virginia
 }
