@@ -9,3 +9,4 @@ terraform.tfvars
 *.lock.hcl
 .DS_Store
 *.DS_Store
+jobs/*/jupyter/*
