@@ -4,6 +4,6 @@ WORKDIR /usr/local/src
 
 ADD data/. /usr/local/src
 
-ENV PYTHONPATH=/usr/lib/python3/dist-packages:
+ENV PYTHONPATH=/usr/local/src
 
-CMD ["python3", "etl.py"]
+CMD ["etl.lambda_handler"]
