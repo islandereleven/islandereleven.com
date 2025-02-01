@@ -38,6 +38,14 @@ resource "aws_s3_object" "index" {
   content_type = "text/html"
 }
 
+resource "aws_s3_object" "privacy-policy" {
+  bucket = aws_s3_bucket.website_bucket.id
+  key    = "privacy-policy.html"
+  source = "./frontend/privacy-policy.html"          
+  etag   = filemd5("./frontend/privacy-policy.html") 
+  content_type = "text/html"
+}
+
 resource "aws_s3_object" "style" {
   bucket = aws_s3_bucket.website_bucket.id
   key    = "style.css"
