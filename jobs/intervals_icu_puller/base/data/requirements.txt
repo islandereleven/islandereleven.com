@@ -1,0 +1,6 @@
+numpy>=1.23.5
+pandas
+s3fs
+boto3
+fastparquet
+requests
