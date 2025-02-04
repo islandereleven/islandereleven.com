@@ -1,4 +1,5 @@
 stages:
+  - init
   - plan
   - apply
 
@@ -12,15 +13,27 @@ before_script:
   - wget https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip
   - unzip terraform_1.0.11_linux_amd64.zip
   - mv terraform /usr/local/bin/
-
-plan:
-  stage: plan
+init:
+  stage: init
   script:
     - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
         echo "Initializing Terraform in $dir";
         cd $dir;
         terraform init;
         cd -;
+      done
+  only:
+    - main
+  artifacts:
+    paths:
+      - $TF_ROOT/**/.terraform
+      - $TF_ROOT/**/.terraform.lock.hcl
+    expire_in: 1 hour
+
+plan:
+  stage: plan
+  script:
+    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
         echo "Planning Terraform in $dir";
         cd $dir;
         terraform plan;
@@ -28,15 +41,13 @@ plan:
       done
   only:
     - main
+  dependencies:
+    - init
 
 apply:
   stage: apply
   script:
     - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-        echo "Initializing Terraform in $dir";
-        cd $dir;
-        terraform init;
-        cd -;
         echo "Applying Terraform in $dir";
         cd $dir;
         terraform apply -auto-approve;
@@ -45,3 +56,6 @@ apply:
   only:
     - main
   when: manual
+  dependencies:
+    - init
+
