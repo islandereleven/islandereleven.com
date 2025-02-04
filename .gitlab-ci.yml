@@ -5,6 +5,7 @@ stages:
 variables:
   TF_ROOT: infrastructure
   TF_IN_AUTOMATION: true
+  AWS_REGION: eu-central-1
 
 before_script:
   - apt-get update && apt-get install -y unzip
