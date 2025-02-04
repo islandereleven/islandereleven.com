@@ -24,11 +24,6 @@ init:
       done
   only:
     - main
-  artifacts:
-    paths:
-      - $TF_ROOT/**/.terraform
-      - $TF_ROOT/**/.terraform.lock.hcl
-    expire_in: 1 hour
 
 plan:
   stage: plan
