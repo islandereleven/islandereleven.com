@@ -4,13 +4,19 @@ Islander Eleven is a personal website deployed on AWS using Terraform. The websi
 
 ## Architecture
 
-[Browser] ↔ [CloudFront]
-↕
-[S3 Website]
-↕
-[Lambda Jobs] ↔ [S3 Data Lake]
-↕
-[ext Data: Garmin, Intervals.icu]
+    [Browser] ↔ [CloudFront]
+    
+						↕
+    
+			    [S3 Website]
+    
+						↕
+    
+			    [Lambda Jobs] ↔ [S3 Data Lake]
+    
+						↕
+    
+    [ext Data: Garmin, Intervals.icu]
 
 ### Components
 
