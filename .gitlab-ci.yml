@@ -8,18 +8,19 @@ variables:
   TF_IN_AUTOMATION: true
   AWS_REGION: eu-central-1
 
-before_script:
-  - apt-get update && apt-get install -y unzip
-  - wget https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip
-  - unzip terraform_1.0.11_linux_amd64.zip
-  - mv terraform /usr/local/bin/
+cache:
+  key: terraform-cache
+  paths:
+    - $TF_ROOT/**/.terraform
+    - $TF_ROOT/**/.terraform.lock.hcl
+
 init:
   stage: init
   script:
     - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
         echo "Initializing Terraform in $dir";
         cd $dir;
-        terraform init;
+        terraform init -reconfigure;
         cd -;
       done
   only:
@@ -36,8 +37,6 @@ plan:
       done
   only:
     - main
-  dependencies:
-    - init
 
 apply:
   stage: apply
@@ -51,6 +50,3 @@ apply:
   only:
     - main
   when: manual
-  dependencies:
-    - init
-
