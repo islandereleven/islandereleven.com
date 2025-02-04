@@ -1,0 +1,51 @@
+stages:
+  - init
+  - plan
+  - apply
+
+variables:
+  TF_ROOT: infrastructure
+  TF_IN_AUTOMATION: true
+
+before_script:
+  - apt-get update && apt-get install -y unzip
+  - wget https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip
+  - unzip terraform_1.0.11_linux_amd64.zip
+  - mv terraform /usr/local/bin/
+
+init:
+  stage: init
+  script:
+    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+        echo "Initializing Terraform in $dir";
+        cd $dir;
+        terraform init;
+        cd -;
+      done
+  only:
+    - main
+
+plan:
+  stage: plan
+  script:
+    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+        echo "Planning Terraform in $dir";
+        cd $dir;
+        terraform plan;
+        cd -;
+      done
+  only:
+    - main
+
+apply:
+  stage: apply
+  script:
+    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+        echo "Applying Terraform in $dir";
+        cd $dir;
+        terraform apply -auto-approve;
+        cd -;
+      done
+  only:
+    - main
+  when: manual
