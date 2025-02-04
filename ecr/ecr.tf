@@ -6,5 +6,5 @@ resource "aws_ecr_repository" "intervals_icu_puller" {
   name = "intervals-icu-puller"
 }
 resource "aws_ecr_repository" "time_in_zone_chart" {
-  name = "time-in_zone-chart"
+  name = "time-in-zone-chart"
 }

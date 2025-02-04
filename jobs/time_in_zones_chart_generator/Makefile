@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := help  
+.DEFAULT_GOAL := help
 
 .PHONY: help
 help: ## Show available targets
@@ -6,12 +6,12 @@ help: ## Show available targets
 
 .PHONY: build-base
 build-base: ## Build the base Docker image
-	docker build -t garmin-puller-base ./base
+	docker build --platform=linux/arm64 -t time-in-zone-chart-base ./base
 	@echo "Base image built."
 
 .PHONY: build-app
-build-app: ## Build the app Docker image## docker build -t garmin-puller ./app --no-cache
-	docker build -t garmin-puller ./app --no-cache
+build-app: ## Build the app Docker image
+	docker build --platform=linux/arm64 -t time-in-zone-chart ./app --no-cache
 	@echo "App image built."
 
 .PHONY: push-app
@@ -21,11 +21,11 @@ push-app: build-base build-app ## Build images and push the app Docker image to 
 		exit 1; \
 	fi
 	aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com
-	docker tag garmin-puller:latest $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/garmin-puller:latest
-	docker push $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/garmin-puller:latest
+	docker tag time-in-zone-chart:latest $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/time-in-zone-chart:latest
+	docker push --platform=linux/arm64 $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/time-in-zone-chart:latest
 	@echo "App image pushed."
 
 .PHONY: test-unit
 test-unit: ## Run unit tests in Docker
-	docker build -t garmin-puller-test -f tests/Dockerfile.test .
-	docker run --rm garmin-puller-test pytest tests/unit/ -v
+	docker build -t time-in-zone-chart-test -f tests/Dockerfile.test .
+	docker run --rm time-in-zone-chart-test pytest tests/unit/ -v

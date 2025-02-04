@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.10 AS base
+FROM --platform=linux/arm64 public.ecr.aws/lambda/python:3.10 AS base
 
 WORKDIR /usr/local/src
 
