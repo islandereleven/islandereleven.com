@@ -1,5 +1,4 @@
 stages:
-  - init
   - plan
   - apply
 
@@ -13,22 +12,14 @@ before_script:
   - unzip terraform_1.0.11_linux_amd64.zip
   - mv terraform /usr/local/bin/
 
-init:
-  stage: init
+plan:
+  stage: plan
   script:
     - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
         echo "Initializing Terraform in $dir";
         cd $dir;
         terraform init;
         cd -;
-      done
-  only:
-    - main
-
-plan:
-  stage: plan
-  script:
-    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
         echo "Planning Terraform in $dir";
         cd $dir;
         terraform plan;
@@ -41,6 +32,10 @@ apply:
   stage: apply
   script:
     - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+        echo "Initializing Terraform in $dir";
+        cd $dir;
+        terraform init;
+        cd -;
         echo "Applying Terraform in $dir";
         cd $dir;
         terraform apply -auto-approve;
