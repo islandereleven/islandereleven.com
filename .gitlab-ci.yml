@@ -8,17 +8,16 @@ variables:
   TF_IN_AUTOMATION: true
   AWS_REGION: eu-central-1
 
-before_script:
-  - apt-get update && apt-get install -y unzip
-  - wget https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip
-  - unzip terraform_1.0.11_linux_amd64.zip
-  - mv terraform /usr/local/bin/
+image: hashicorp/terraform:1.0.11
 
 cache:
-  key: terraform-cache
+  key:
+    files:
+      - $TF_ROOT/**/.terraform.lock.hcl
+    prefix: tf-$CI_PROJECT_ID
   paths:
     - $TF_ROOT/**/.terraform
-    - $TF_ROOT/**/.terraform.lock.hcl
+  policy: pull-push
 
 init:
   stage: init
@@ -34,25 +33,29 @@ init:
 
 plan:
   stage: plan
+  parallel:
+    matrix:
+      - TF_DIR: $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u)
   script:
-    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-        echo "Planning Terraform in $dir";
-        cd $dir;
-        terraform plan;
-        cd -;
-      done
+    - cd ${TF_DIR}
+    - terraform init -reconfigure
+    - terraform plan -no-color -out=tfplan
+    - cd -
+  artifacts:
+    paths:
+      - ${TF_DIR}/tfplan
   only:
+    - merge_requests
     - main
 
 apply:
   stage: apply
+  dependencies:
+    - plan
   script:
-    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-        echo "Applying Terraform in $dir";
-        cd $dir;
-        terraform apply -auto-approve;
-        cd -;
-      done
+    - cd ${TF_DIR}
+    - terraform apply -auto-approve tfplan
+    - cd -
+  when: manual
   only:
     - main
-  when: manual
