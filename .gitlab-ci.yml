@@ -8,7 +8,9 @@ variables:
   TF_IN_AUTOMATION: true
   AWS_REGION: eu-central-1
 
-image: hashicorp/terraform:1.0.11
+image:
+  name: hashicorp/terraform:1.0.11
+  entrypoint: [""]  # Disable the default Terraform entrypoint
 
 cache:
   key:
@@ -22,29 +24,29 @@ cache:
 init:
   stage: init
   script:
-    - find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-        echo "Initializing Terraform in $dir";
-        cd $dir;
-        terraform init -reconfigure;
-        cd -;
+    - |
+      find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+        echo "Initializing Terraform in $dir"
+        cd "$dir"
+        terraform init -reconfigure
+        cd -
       done
   only:
     - main
 
 plan:
   stage: plan
+  parallel:
+    matrix:
+      - TF_DIR: $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u)
   script:
     - |
-      for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
-        echo "Planning Terraform in $dir";
-        cd $dir;
-        terraform init -reconfigure;
-        terraform plan -no-color -out=tfplan;
-        cd -;
-      done
+      cd "${TF_DIR}"
+      terraform init -reconfigure
+      terraform plan -no-color -out=tfplan
   artifacts:
     paths:
-      - $TF_ROOT/**/tfplan
+      - ${TF_DIR}/tfplan
   only:
     - merge_requests
     - main
@@ -55,12 +57,8 @@ apply:
     - plan
   script:
     - |
-      for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
-        echo "Applying Terraform in $dir";
-        cd $dir;
-        terraform apply -auto-approve tfplan;
-        cd -;
-      done
+      cd "${TF_DIR}"
+      terraform apply -auto-approve tfplan
   when: manual
   only:
     - main
