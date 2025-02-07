@@ -11,7 +11,7 @@ resource "aws_s3_bucket_public_access_block" "public_access_block" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_website_configuration" "example-config" {
+resource "aws_s3_bucket_website_configuration" "website-config" {
   bucket = aws_s3_bucket.website_bucket.bucket
   index_document {
     suffix = "index.html"
@@ -21,6 +21,21 @@ resource "aws_s3_bucket_website_configuration" "example-config" {
 resource "aws_s3_bucket_policy" "islander_bucket_policy" {
   bucket = aws_s3_bucket.website_bucket.id
   policy = templatefile("s3-policy.json", { bucket = var.bucket_name })
+}
+
+resource "aws_s3_bucket_cors_configuration" "cors" {
+  bucket = aws_s3_bucket.website_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET"]
+    allowed_origins = [
+      "https://${var.domain_name}",  
+      "https://${aws_cloudfront_distribution.cf_distro.domain_name}" ,
+      "https://corsproxy.io"
+    ] 
+    max_age_seconds = 3000
+  }
 }
 
 resource "aws_s3_object" "pic" {
