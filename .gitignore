@@ -10,3 +10,5 @@ terraform.tfvars
 .DS_Store
 *.DS_Store
 jobs/*/jupyter/*
+
+.idea
