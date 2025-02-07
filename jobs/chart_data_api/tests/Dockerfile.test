@@ -1,0 +1,16 @@
+FROM garmin-puller-base:latest
+
+WORKDIR /app
+
+# Install test deps first
+COPY tests/requirements-test.txt .
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Copy application as a package
+COPY app/ ./app
+COPY tests/ ./tests
+
+# Add to Python path
+ENV PYTHONPATH="${PYTHONPATH}:/app"
+
+CMD ["pytest", "tests/unit/", "-v"]

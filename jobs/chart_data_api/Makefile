@@ -6,12 +6,12 @@ help: ## Show available targets
 
 .PHONY: build-base
 build-base: ## Build the base Docker image
-	docker build --platform=linux/arm64 -t intervals-icu-puller-base ./base
+	docker build --platform=linux/arm64 -t chart_data_api_base ./base
 	@echo "Base image built."
 
 .PHONY: build-app
-build-app: ## Build the app Docker image## docker build -t intervals-icu-puller ./app --no-cache
-	docker build --platform=linux/arm64 -t intervals-icu-puller ./app --no-cache
+build-app: ## Build the app Docker image## docker build -t chart_data_api ./app --no-cache
+	docker build --platform=linux/arm64 -t chart_data_api ./app --no-cache
 	@echo "App image built."
 
 .PHONY: push-app
@@ -21,11 +21,11 @@ push-app: build-base build-app ## Build images and push the app Docker image to 
 		exit 1; \
 	fi
 	aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com
-	docker tag intervals-icu-puller:latest $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/intervals-icu-puller:latest
-	docker push --platform=linux/arm64 $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/intervals-icu-puller:latest
+	docker tag chart_data_api:latest $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/chart_data_api:latest
+	docker push --platform=linux/arm64 $(AWS_ACCOUNT_ID).dkr.ecr.eu-central-1.amazonaws.com/chart_data_api:latest
 	@echo "App image pushed."
 
 .PHONY: test-unit
 test-unit: ## Run unit tests in Docker
-	docker build -t intervals-icu-puller-test -f tests/Dockerfile.test .
-	docker run --rm intervals-icu-puller-test pytest tests/unit/ -v
+	docker build -t chart_data_api_test -f tests/Dockerfile.test .
+	docker run --rm chart_data_api_test pytest tests/unit/ -v

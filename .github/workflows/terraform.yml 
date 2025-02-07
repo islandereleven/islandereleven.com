@@ -1,0 +1,91 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  TF_ROOT: infrastructure
+  TF_IN_AUTOMATION: true
+  AWS_REGION: eu-central-1
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.11
+
+      - name: Initialize Terraform
+        run: |
+          find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+            echo "Initializing Terraform in $dir"
+            cd "$dir"
+            terraform init -reconfigure
+            cd -
+          done
+
+  plan:
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.11
+
+      - name: Plan Terraform
+        run: |
+          for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
+            echo "Planning Terraform in $dir"
+            cd "$dir"
+            terraform init -reconfigure
+            terraform plan -no-color -out=tfplan
+            cd -
+          done
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: tfplan
+          path: ${{ env.TF_ROOT }}/**/tfplan
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: plan
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.11
+
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v2
+        with:
+          name: tfplan
+          path: ${{ env.TF_ROOT }}
+
+      - name: Apply Terraform
+        run: |
+          for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
+            echo "Applying Terraform in $dir"
+            cd "$dir"
+            terraform apply -auto-approve tfplan
+            cd -
+          done

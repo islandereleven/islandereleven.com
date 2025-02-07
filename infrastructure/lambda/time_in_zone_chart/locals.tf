@@ -6,7 +6,7 @@ locals {
 locals {
   default_environment_variables = {
     S3_INPUT_PATH = "s3://islandereleven-data-lake/raw/activities/platform=intervals_icu/activities.parquet"
-    S3_OUTPUT_PATH = "s3://islandereleven.com/data/time_in_zone_chart.json"
+    S3_OUTPUT_PATH = "s3://islandereleven-data-lake/gold/charts/time_in_zone_chart.json"
     LOG_LEVEL = "INFO"
   }
 
