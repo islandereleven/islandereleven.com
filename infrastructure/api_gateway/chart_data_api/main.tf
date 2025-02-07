@@ -34,7 +34,7 @@ resource "aws_apigatewayv2_deployment" "api_deployment" {
 resource "aws_apigatewayv2_stage" "api_stage" {  
   api_id      = aws_apigatewayv2_api.lambda_api.id  
   name        = "prod" # Name your stage (e.g., "dev", "prod")  
-  deployment_id = aws_apigatewayv2_deployment.api_deployment.id  
+  # deployment_id = aws_apigatewayv2_deployment.api_deployment.id  
   
   auto_deploy = true # Optional: Auto-deploy on changes  
 }  
