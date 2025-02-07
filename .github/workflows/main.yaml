@@ -16,6 +16,7 @@ env:
 jobs:
   init:
     runs-on: ubuntu-latest
+    environment: aws
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -43,6 +44,7 @@ jobs:
 
   plan:
     runs-on: ubuntu-latest
+    environment: aws
     needs: init
     steps:
       - name: Checkout code
@@ -78,6 +80,7 @@ jobs:
 
   apply:
     runs-on: ubuntu-latest
+    environment: aws
     needs: plan
     if: github.ref == 'refs/heads/main'
     steps:
