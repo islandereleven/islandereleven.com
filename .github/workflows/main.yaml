@@ -105,6 +105,15 @@ jobs:
           name: tfplan
           path: ${{ env.TF_ROOT }}
 
+      - name: Initialize Terraform
+        run: |
+          find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
+            echo "Initializing Terraform in $dir"
+            cd "$dir"
+            terraform init -reconfigure
+            cd -
+          done
+
       - name: Apply Terraform
         run: |
           for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
