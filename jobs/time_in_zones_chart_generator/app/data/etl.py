@@ -18,14 +18,17 @@ def load_data(s3_path):
         logger.error(f"Error loading data from S3: {e}")
         raise
 
+import pandas as pd
+from datetime import datetime, timedelta
+
 def process_data(df):
-    """Process the data to sum heart rate zone times by week."""
+    """Process the data to sum heart rate zone times by week, including weeks without data."""
     try:
         # Convert start_date_local to datetime
         df['start_date_local'] = pd.to_datetime(df['start_date_local'])
 
-        # Extract the week number
-        df['week'] = df['start_date_local'].dt.isocalendar().year.apply(str) + "-W" + df['start_date_local'].dt.isocalendar().week.apply(str)
+        # Extract the week number with leading zeros
+        df['week'] = df['start_date_local'].dt.isocalendar().year.astype(str) + "-W" + df['start_date_local'].dt.isocalendar().week.apply(lambda x: f'{x:02d}')
 
         # Initialize a dictionary to store the summed times for each week
         weekly_sums = {}
@@ -55,11 +58,26 @@ def process_data(df):
         # Rename columns to include the max heart rate of each zone
         weekly_sums_df.columns = ['week'] + [f'Zone {i} (Max HR: {hr}bpm)' for i, hr in enumerate(unique_hr_zones, start=1)]
 
-        logger.info("Data processed successfully.")
+        # Generate a list of the past 27 weeks up to today with leading zeros
+        today = datetime.today()
+        past_27_weeks = [(today - timedelta(weeks=i)).isocalendar()[:2] for i in range(27)]
+        past_27_weeks = [f"{year}-W{week:02d}" for year, week in past_27_weeks]
+
+        # Ensure all weeks are present in the DataFrame
+        for week in past_27_weeks:
+            if week not in weekly_sums_df['week'].values:
+                weekly_sums_df = pd.concat([weekly_sums_df, pd.DataFrame([[week] + [0]*7], columns=weekly_sums_df.columns)], ignore_index=True)
+
+        # Sort the DataFrame by week
+        weekly_sums_df.sort_values('week', inplace=True, ascending=False)
+        weekly_sums_df.reset_index(drop=True, inplace=True)
+
+        #logger.info("Data processed successfully.")
         return weekly_sums_df
     except Exception as e:
-        logger.error(f"Error processing data: {e}")
+        #logger.error(f"Error processing data: {e}")
         raise
+    
 
 def convert_to_json(df):
     """Convert the DataFrame to a JSON string."""
