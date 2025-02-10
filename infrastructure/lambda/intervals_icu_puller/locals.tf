@@ -1,6 +1,6 @@
 # locals.tf
 locals {
-  lambda_role_arn = aws_iam_role.lambda_exec_role.arn
+  lambda_role_arn = data.aws_iam_role.lambda_execution_role.arn
 }
 
 locals {
