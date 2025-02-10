@@ -16,8 +16,8 @@ resource "aws_cloudwatch_metric_alarm" "sfn_error_alarm" {
   insufficient_data_actions = []
 
   dimensions = {
-    StateMachineArn = aws_sfn_state_machine.intervals_icu_pipeline.arn
+    StateMachineArn = data.aws_sfn_state_machine.intervals_icu_pipeline.arn
   }
 
-  alarm_actions = [aws_sns_topic.sfn_alerts.arn]
+  alarm_actions = [data.aws_sns_topic.sfn_alerts.arn]
 }
