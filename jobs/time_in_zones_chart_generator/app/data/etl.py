@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import boto3
+from datetime import datetime, timedelta
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -11,15 +13,45 @@ logger = logging.getLogger()
 def load_data(s3_path):
     """Load data from S3 Parquet file."""
     try:
-        df = pd.read_parquet(s3_path)
+        df = pd.read_parquet(s3_path)[["start_date_local", "icu_hr_zones", "icu_hr_zone_times"]]
         logger.info("Data loaded successfully from S3.")
         return df
     except Exception as e:
         logger.error(f"Error loading data from S3: {e}")
         raise
 
-import pandas as pd
-from datetime import datetime, timedelta
+def validate_and_filter_df(df):
+    # Define the function to check if a value is a valid date
+    def is_valid_date(date_str):
+        try:
+            datetime.fromisoformat(date_str)
+            return True
+        except ValueError:
+            return False
+
+    # Define the function to check if a list contains only integers
+    def is_list_of_integers(lst):
+        return all(isinstance(item, int) for item in lst)
+
+    # Filter the DataFrame
+    valid_rows = []
+    for index, row in df.iterrows():
+        start_date_local = row['start_date_local']
+        icu_hr_zones = row['icu_hr_zones']
+        icu_hr_zone_times = row['icu_hr_zone_times']
+
+        if (is_valid_date(start_date_local) and
+            isinstance(icu_hr_zones, list) and
+            isinstance(icu_hr_zone_times, list) and
+            is_list_of_integers(icu_hr_zones) and
+            is_list_of_integers(icu_hr_zone_times) and
+            len(icu_hr_zones) == len(icu_hr_zone_times)):
+            valid_rows.append(row)
+
+    # Create a new DataFrame with the valid rows
+    valid_df = pd.DataFrame(valid_rows)
+    return valid_df
+
 
 def process_data(df):
     """Process the data to sum heart rate zone times by week, including weeks without data."""
@@ -106,7 +138,9 @@ def lambda_handler(event, context):
     s3_output_path = os.getenv('S3_OUTPUT_PATH', 's3://your-output-bucket/processed/activities.json')
 
     df = load_data(s3_input_path)
-    processed_df = process_data(df)
+
+    valid_data = validate_and_filter_df(df)
+    processed_df = process_data(valid_data)
     json_data = convert_to_json(processed_df)
     write_to_s3(json_data, s3_output_path)
 
