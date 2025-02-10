@@ -15,7 +15,7 @@ build-app: ## Build the app Docker image## docker build -t chart_data_api ./app 
 	@echo "App image built."
 
 .PHONY: push-app
-push-app: build-base build-app ## Build images and push the app Docker image to AWS ECR
+push-app: build-base build-app test-unit## Build images and push the app Docker image to AWS ECR
 	@if [ -z "$(AWS_ACCOUNT_ID)" ]; then \
 		echo "Error: AWS_ACCOUNT_ID environment variable is not set."; \
 		exit 1; \
@@ -28,4 +28,4 @@ push-app: build-base build-app ## Build images and push the app Docker image to 
 .PHONY: test-unit
 test-unit: ## Run unit tests in Docker
 	docker build -t chart_data_api_test -f tests/Dockerfile.test .
-	docker run --rm chart_data_api_test pytest tests/unit/ -v
+	docker run --rm chart_data_api_test

@@ -1,4 +1,4 @@
-FROM garmin-puller-base:latest
+FROM time-in-zone-chart-base:latest
 
 WORKDIR /usr/local/src
 

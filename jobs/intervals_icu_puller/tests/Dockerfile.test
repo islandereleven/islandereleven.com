@@ -1,4 +1,4 @@
-FROM garmin-puller-base:latest
+FROM intervals-icu-puller-base:latest
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements-test.txt
 COPY app/ ./app
 COPY tests/ ./tests
 
-# Add to Python path
-ENV PYTHONPATH="${PYTHONPATH}:/app"
+# Set the PYTHONPATH environment variable
+ENV PYTHONPATH="/app"
 
-CMD ["pytest", "tests/unit/", "-v"]
+ENTRYPOINT ["pytest", "tests/unit/", "-v"]

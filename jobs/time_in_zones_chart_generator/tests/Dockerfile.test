@@ -1,8 +1,8 @@
-FROM chart_data_api_base:latest
+FROM time-in-zone-chart-base:latest
 
 WORKDIR /app
 
-# Install test deps first
+# Install test dependencies first
 COPY tests/requirements-test.txt .
 RUN pip install --no-cache-dir -r requirements-test.txt
 
@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements-test.txt
 COPY app/ ./app
 COPY tests/ ./tests
 
-# Add to Python path
+# Set the PYTHONPATH environment variable
 ENV PYTHONPATH="/app"
 
 ENTRYPOINT ["pytest", "tests/unit/", "-v"]
