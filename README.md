@@ -6,11 +6,11 @@ Islander Eleven is a personal website deployed on AWS using Terraform. The websi
 
     [CloudFront] ↔ [Browser]
     
-		↕               ↕
+		↕              ↕
     
     [S3 Website]   [Data API]
 
-		↕               ↕
+		↕              ↕
 
     [Lambda Jobs] ↔ [S3 Data Lake]
 
@@ -55,4 +55,4 @@ Islander Eleven is a personal website deployed on AWS using Terraform. The websi
 
 ## Contributing
 
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
+Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue.
