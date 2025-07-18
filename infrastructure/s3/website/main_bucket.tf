@@ -76,3 +76,11 @@ resource "aws_s3_object" "sitemap" {
   etag   = filemd5("./frontend/sitemap.xml") 
   content_type = "application/xml"
 }
+
+resource "aws_s3_object" "favicon" {
+  bucket = aws_s3_bucket.website_bucket.id
+  key    = "favicon.ico"
+  source = "./frontend/favicon.ico"
+  etag   = filemd5("./frontend/favicon.ico")
+  content_type = "image/x-icon"
+}
