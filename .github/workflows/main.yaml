@@ -13,21 +13,32 @@ env:
   AWS_REGION: 'eu-central-1'
 
 jobs:
+  # This job finds all the directories and creates the matrix
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: set-matrix
+        name: Find Terraform Directories
+        run: |
+          # Finds directories with .tf files, excludes .terraform and module dirs, formats as JSON
+          TF_DIRS=$(find infrastructure -mindepth 1 -type f -name '*.tf' -printf '%h\n' | sort -u | grep -vE '(\.terraform|/module)$' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "matrix=$TF_DIRS" >> $GITHUB_OUTPUT
+
+  # This job runs Terraform on the directories found by the setup-matrix job
   terraform:
-    name: 'Terraform Plan/Apply'
+    needs: setup-matrix
+    name: 'Terraform Plan/Apply on ${{ matrix.tf_dir }}'
     runs-on: ubuntu-latest
     environment: aws
 
     strategy:
+      # The matrix is now dynamically populated from the previous job
       matrix:
-        tf_dir:
-          - 'infrastructure/api_gateway/chart_data_api'
-          - 'infrastructure/cloudwatch/step_functions'
-          - 'infrastructure/ecr/lambda'
-          - 'infrastructure/iam/lambda'
-          - 'infrastructure/lambda/chart_data_api'
-          - 'infrastructure/lambda/garmin_puller'
-          - 'infrastructure/lambda/intervals_icu_puller'
+        tf_dir: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
 
     defaults:
       run:
