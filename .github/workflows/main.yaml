@@ -60,7 +60,7 @@ jobs:
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ matrix.tf_dir }}
+          name: tfplan-${{ replace(matrix.tf_dir, '/', '-') }}
           path: ${{ matrix.tf_dir }}/tfplan
 
       - name: Terraform Apply (Main Branch Only)
