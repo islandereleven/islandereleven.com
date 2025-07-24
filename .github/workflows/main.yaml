@@ -17,6 +17,7 @@ jobs:
     name: 'Terraform Plan/Apply'
     runs-on: ubuntu-latest
     environment: aws
+
     strategy:
       matrix:
         tf_dir:
@@ -57,10 +58,15 @@ jobs:
         id: plan
         run: terraform plan -input=false -no-color -out=tfplan
 
+      - name: Generate Sanitized Artifact Name
+        id: sanitize
+        run: |
+          echo "ARTIFACT_NAME=tfplan-$(echo ${{ matrix.tf_dir }} | sed 's/\//-/g')" >> $GITHUB_ENV
+
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ replace(matrix.tf_dir, '/', '-') }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: ${{ matrix.tf_dir }}/tfplan
 
       - name: Terraform Apply (Main Branch Only)
