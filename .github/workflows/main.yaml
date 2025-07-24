@@ -9,116 +9,61 @@ on:
       - main
 
 env:
-  TF_ROOT: infrastructure
-  TF_IN_AUTOMATION: true
-  AWS_REGION: eu-central-1
+  TF_VERSION: '1.8.5' # Use a more recent version of Terraform
+  AWS_REGION: 'eu-central-1'
 
 jobs:
-  init:
+  terraform:
+    name: 'Terraform Plan/Apply'
     runs-on: ubuntu-latest
-    environment: aws
+    # Use a matrix to define all your Terraform root directories
+    strategy:
+      matrix:
+        tf_dir:
+          - 'infrastructure/api_gateway/chart_data_api'
+          - 'infrastructure/cloudwatch/step_functions'
+          - 'infrastructure/ecr/lambda'
+          - 'infrastructure/iam/lambda'
+          - 'infrastructure/lambda/chart_data_api'
+          - 'infrastructure/lambda/garmin_puller'
+          - 'infrastructure/lambda/intervals_icu_puller'
+          # NOTE: Do NOT include module directories here
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.tf_dir }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4 # Use latest version
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3 # Use latest version
         with:
-          terraform_version: 1.0.11
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false # To avoid deprecation warnings
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4 # Use latest version
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Initialize Terraform
-        run: |
-          find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-            echo "Initializing Terraform in $dir"
-            cd "$dir"
-            terraform init -reconfigure
-            cd -
-          done
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
 
-  plan:
-    runs-on: ubuntu-latest
-    environment: aws
-    needs: init
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.11
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Plan Terraform
-        run: |
-          for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
-            echo "Planning Terraform in $dir"
-            cd "$dir"
-            terraform init -reconfigure
-            terraform plan -no-color -out=tfplan
-            cd -
-          done
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -input=false -no-color -out=tfplan
 
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan
-          path: ${{ env.TF_ROOT }}/**/tfplan
+          name: tfplan-${{ matrix.tf_dir }} # Unique artifact name per directory
+          path: ${{ matrix.tf_dir }}/tfplan
 
-  apply:
-    runs-on: ubuntu-latest
-    environment: aws
-    needs: plan
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.11
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Download Terraform Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: ${{ env.TF_ROOT }}
-
-      - name: Initialize Terraform
-        run: |
-          find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u | while read -r dir; do
-            echo "Initializing Terraform in $dir"
-            cd "$dir"
-            terraform init -reconfigure
-            cd -
-          done
-
-      - name: Apply Terraform
-        run: |
-          for dir in $(find $TF_ROOT -type f -name '*.tf' -exec dirname {} \; | sort -u); do
-            echo "Applying Terraform in $dir"
-            cd "$dir"
-            terraform apply -auto-approve tfplan
-            cd -
-          done
+      - name: Terraform Apply (Main Branch Only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -input=false -auto-approve tfplan
