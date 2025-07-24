@@ -9,14 +9,14 @@ on:
       - main
 
 env:
-  TF_VERSION: '1.8.5' # Use a more recent version of Terraform
+  TF_VERSION: '1.8.5'
   AWS_REGION: 'eu-central-1'
 
 jobs:
   terraform:
     name: 'Terraform Plan/Apply'
     runs-on: ubuntu-latest
-    # Use a matrix to define all your Terraform root directories
+    environment: aws
     strategy:
       matrix:
         tf_dir:
@@ -27,7 +27,6 @@ jobs:
           - 'infrastructure/lambda/chart_data_api'
           - 'infrastructure/lambda/garmin_puller'
           - 'infrastructure/lambda/intervals_icu_puller'
-          # NOTE: Do NOT include module directories here
 
     defaults:
       run:
@@ -35,16 +34,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Use latest version
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3 # Use latest version
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-          terraform_wrapper: false # To avoid deprecation warnings
+          terraform_wrapper: false
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4 # Use latest version
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -61,7 +60,7 @@ jobs:
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ matrix.tf_dir }} # Unique artifact name per directory
+          name: tfplan-${{ matrix.tf_dir }}
           path: ${{ matrix.tf_dir }}/tfplan
 
       - name: Terraform Apply (Main Branch Only)
