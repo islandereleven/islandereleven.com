@@ -1,0 +1,30 @@
+[project]
+name = "time-in-zones-chart-generator"
+version = "0.1.0"
+description = "AWS Lambda package for generating time-in-zone chart data."
+authors = [{ name = "Islander Eleven" }]
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "numpy>=1.23.5",
+    "pandas",
+    "s3fs>=2024.0.0",
+    "boto3",
+    "fastparquet",
+]
+
+[tool.poetry]
+packages = [{ include = "time_in_zones_chart_generator", from = "src" }]
+
+[tool.poetry.group.test.dependencies]
+pytest = "7.4.0"
+moto = ">=5.0.0"
+pytest-cov = "4.1.0"
+pytest-mock = "3.11.1"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
