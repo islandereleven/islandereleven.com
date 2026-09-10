@@ -7,4 +7,4 @@ This directory contains environment-specific Terraform roots for the time-in-zon
 
 The production ECR repository is owned by the prod job stack. The old shared `infrastructure/ecr/lambda` stack keeps a compatibility output for the repository URL, but no longer manages that repository.
 
-The staging Lambda bootstraps from the existing production image by default because the staging ECR repo starts empty. After a staging image is pushed, set `lambda_image_uri` to the staging image URI.
+The staging Lambda uses the staging ECR repository by default. Push an image to `time-in-zone-chart-staging:latest` before applying changes that create or update the staging Lambda image.

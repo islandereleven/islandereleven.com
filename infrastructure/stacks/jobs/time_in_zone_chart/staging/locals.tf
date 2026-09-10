@@ -1,6 +1,6 @@
 locals {
   data_lake_bucket_arn = "arn:aws:s3:::${var.data_lake_bucket_name}"
-  lambda_image_uri     = var.lambda_image_uri != null ? var.lambda_image_uri : "${data.aws_ecr_repository.bootstrap_time_in_zone_chart.repository_url}:${var.bootstrap_image_tag}"
+  lambda_image_uri     = var.lambda_image_uri != null ? var.lambda_image_uri : "${aws_ecr_repository.time_in_zone_chart.repository_url}:${var.lambda_image_tag}"
   lambda_role_arn      = aws_iam_role.lambda_exec_role.arn
 
   default_environment_variables = {

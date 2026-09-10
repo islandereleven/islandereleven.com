@@ -21,20 +21,14 @@ variable "ecr_repository_name" {
   default     = "time-in-zone-chart-staging"
 }
 
-variable "bootstrap_ecr_repository_name" {
-  description = "Existing ECR repository used to bootstrap the staging Lambda before a staging image exists."
-  type        = string
-  default     = "time-in-zone-chart"
-}
-
-variable "bootstrap_image_tag" {
-  description = "Existing image tag used to bootstrap the staging Lambda before a staging image exists."
+variable "lambda_image_tag" {
+  description = "Image tag to use when lambda_image_uri is not set."
   type        = string
   default     = "latest"
 }
 
 variable "lambda_image_uri" {
-  description = "Full Lambda image URI. Set this to the staging ECR image URI after an image has been pushed."
+  description = "Full Lambda image URI. When unset, the URI is built from ecr_repository_name and lambda_image_tag."
   type        = string
   default     = null
 }
