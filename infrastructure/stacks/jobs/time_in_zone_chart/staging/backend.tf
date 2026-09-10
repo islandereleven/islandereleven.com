@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket  = "islandereleven-terraform-state"
-    key     = "islandereleven/ecr/lambda"
+    key     = "islandereleven/stacks/jobs/time_in_zone_chart/staging"
     region  = "eu-central-1"
     encrypt = true
   }
