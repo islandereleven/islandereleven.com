@@ -13,6 +13,36 @@ env:
   AWS_REGION: 'eu-central-1'
 
 jobs:
+  time-in-zones-chart-generator:
+    name: Time In Zones Chart Generator
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: jobs/time_in_zones_chart_generator
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: python -m pip install "poetry==2.2.1"
+
+      - name: Install dependencies
+        run: poetry install --with test
+
+      - name: Check package metadata
+        run: poetry check
+
+      - name: Run unit tests
+        run: poetry run pytest tests/unit/ -v
+
   # This job finds all the directories and creates the matrix
   setup-matrix:
     runs-on: ubuntu-latest
